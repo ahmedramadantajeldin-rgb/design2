@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Power Screws — Mechanical Design II</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@600;700;800&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+:root{
+  --navy:#0B2447; --royal:#1B4F8A; --sky:#2E86C1; --azure:#5DADE2; --mist:#D6EAF8; --pearl:#EBF5FB; --white:#FFFFFF;
+  --ink:#1A1A2E; --graphite:#2C3E50; --slate:#5D6D7E; --gold:#D4AC0D; --amber:#F0B429;
+  --mint:#1ABC9C; --mint-light:#D5F5E3; --coral:#E74C3C; --coral-light:#FADBD8;
+  --shadow:0 4px 20px rgba(11,36,71,0.10); --shadow-lg:0 8px 40px rgba(11,36,71,0.16);
+  --radius:14px; --radius-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;max-width:100%;}
+html,body{overflow-x:hidden;scroll-behavior:smooth;}
+body{
+  background:linear-gradient(160deg,#f0f6ff 0%,#e8f1fb 50%,#f5f9ff 100%);
+  font-family:'Cairo','Source Serif 4',serif;font-size:17px;line-height:1.85;color:var(--ink);
+  min-height:100vh;
+}
+.ltr{direction:ltr;unicode-bidi:isolate;}
+.mono{font-family:'JetBrains Mono',monospace;direction:ltr;unicode-bidi:isolate;display:inline-block;font-size:.92em;}
+.en{direction:ltr;unicode-bidi:isolate;display:inline-block;}
+p{margin:0 0 14px;}
+strong{color:var(--navy);}
+
+/* ===== Header ===== */
+header.hero{
+  position:relative;overflow:hidden;color:#fff;text-align:center;padding:60px 40px 50px;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--royal) 60%,var(--sky) 100%);
+}
+header.hero::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M0 30h60M30 0v60M0 0l60 60M60 0L0 60' stroke='%23ffffff' stroke-opacity='0.04' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+}
+header.hero>*{position:relative;}
+.badge{
+  display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);
+  border-radius:50px;padding:6px 20px;font-size:.78rem;letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:22px;direction:ltr;font-family:'Cairo',sans-serif;font-weight:600;
+}
+header.hero h1{
+  font-family:'Playfair Display',serif;font-weight:800;font-size:clamp(2rem,5vw,3.2rem);line-height:1.25;
+  text-shadow:0 2px 12px rgba(0,0,0,.25);margin-bottom:16px;direction:ltr;
+}
+header.hero h1 .ar{display:block;font-size:.65em;opacity:.85;direction:rtl;font-family:'Cairo',sans-serif;font-weight:700;margin-top:6px;}
+.subtitle{
+  font-family:'Source Serif 4',serif;font-size:1.1rem;opacity:.85;direction:ltr;max-width:650px;margin:0 auto 28px;
+}
+.meta-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+.meta-pill{
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:50px;
+  padding:6px 16px;font-size:.85rem;
+}
+
+/* ===== Dua ===== */
+.dua-wrap{max-width:960px;padding:0 24px;margin:28px auto 0;}
+.dua-card{background:#fff;border:1.5px solid #e8b84b;border-radius:14px;box-shadow:0 2px 12px rgba(168,120,42,.10);overflow:hidden;}
+.dua-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:right;
+  background:linear-gradient(135deg,#7a5800,#b8860b);color:#fff;border:none;cursor:pointer;
+  font-family:'Cairo',sans-serif;font-weight:700;font-size:1.05rem;padding:14px 22px;
+}
+.dua-btn:focus-visible{outline:3px solid var(--amber);outline-offset:-3px;}
+.dua-arrow{display:inline-block;transition:transform .3s ease;}
+.dua-btn[aria-expanded="true"] .dua-arrow{transform:rotate(180deg);}
+.dua-content{display:none;padding:20px 24px;background:linear-gradient(135deg,#fffbea,#fff9f0);}
+.dua-line{
+  font-family:'Amiri',serif;font-size:17px;line-height:2.1;color:#5a3e00;
+  border-right:3px solid #e8b84b;padding-right:14px;margin-bottom:12px;
+}
+
+/* ===== TOC ===== */
+.toc-wrapper{max-width:900px;margin:32px auto 0;padding:0 24px;}
+.toc-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+.toc-head{
+  background:linear-gradient(90deg,var(--royal),var(--sky));color:#fff;padding:16px 26px;
+  font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;direction:ltr;text-align:left;
+}
+.toc-body{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:18px;}
+.toc-item{
+  display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--radius-sm);
+  text-decoration:none;color:var(--graphite);font-weight:600;font-size:.95rem;line-height:1.5;
+  transition:background .2s;
+}
+.toc-item:hover,.toc-item:focus-visible{background:var(--pearl);outline:none;}
+.toc-num{
+  flex:0 0 26px;width:26px;height:26px;border-radius:50%;background:var(--royal);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:.8rem;font-family:'JetBrains Mono',monospace;
+}
+
+/* ===== Content ===== */
+.content-wrapper{max-width:960px;margin:0 auto;padding:0 24px;}
+.section{padding-top:8px;scroll-margin-top:20px;}
+.section-header{display:flex;align-items:center;gap:16px;padding-bottom:16px;margin-bottom:26px;border-bottom:3px solid var(--mist);}
+.section-icon{
+  flex:0 0 52px;width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--royal),var(--sky));
+  display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:var(--shadow);
+}
+.section-title{font-family:'Playfair Display',serif;font-size:1.75rem;color:var(--navy);line-height:1.25;direction:ltr;text-align:left;}
+.section-sub{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--slate);direction:ltr;text-align:left;margin-top:2px;}
+.section-divider{border:none;height:2px;margin:50px 0;background:linear-gradient(90deg,transparent,var(--azure),transparent);}
+h3.sub{font-family:'Playfair Display',serif;color:var(--royal);font-size:1.25rem;margin:26px 0 12px;direction:ltr;text-align:left;}
+
+/* ===== Boxes ===== */
+.def-box{
+  background:linear-gradient(135deg,var(--mist),var(--pearl));border-right:5px solid var(--sky);
+  border-radius:var(--radius);padding:18px 22px;margin:18px 0;box-shadow:var(--shadow);
+}
+.box-title{font-family:'Cairo',sans-serif;font-weight:700;color:var(--royal);font-size:.95rem;margin-bottom:6px;}
+.formula-box{
+  background:var(--navy);color:#fff;border-radius:var(--radius);padding:18px 16px;margin:18px 0;box-shadow:var(--shadow-lg);
+}
+.formula-box .box-title{color:var(--amber);padding:0 8px;}
+.formula-box mjx-container{color:#fff !important;}
+.note-box{
+  background:#fffbea;border-right:5px solid var(--amber);border-radius:var(--radius);
+  padding:16px 22px;margin:18px 0;box-shadow:var(--shadow);
+}
+.note-box .box-title{color:#8a6d00;}
+.warn-box{
+  background:var(--coral-light);border-right:5px solid var(--coral);border-radius:var(--radius);
+  padding:16px 22px;margin:18px 0;box-shadow:var(--shadow);
+}
+.warn-box .box-title{color:#a93226;}
+
+/* equation scroll */
+.eq-scroll{width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;padding:4px 0;direction:ltr;}
+.eq-scroll mjx-container[display="true"]{margin:.6em 0 !important;min-width:max-content;}
+.eq-scroll::-webkit-scrollbar{height:6px;}
+.eq-scroll::-webkit-scrollbar-thumb{background:rgba(93,173,226,.5);border-radius:6px;}
+.eq-plain{background:var(--pearl);border-radius:var(--radius-sm);padding:6px 12px;margin:14px 0;}
+
+/* scroll hint */
+.scroll-hint{display:none;text-align:center;font-size:.78rem;color:var(--slate);margin:2px 0 8px;}
+
+/* ===== Figures ===== */
+figure.fig{margin:22px auto;text-align:center;background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);}
+figure.fig img{max-width:100%;height:auto;display:block;margin:0 auto;border-radius:var(--radius-sm);}
+figure.fig figcaption{font-size:.88rem;color:var(--slate);margin-top:10px;direction:ltr;}
+.fig-sm img{max-width:420px;}
+.fig-md img{max-width:560px;}
+.fig-lg img{max-width:760px;}
+.photo-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:22px 0;}
+.photo-row figure.fig{margin:0;display:flex;flex-direction:column;justify-content:center;}
+.photo-row figure.fig img{max-height:300px;width:auto;}
+.thread-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:22px 0;}
+.thread-grid figure.fig{margin:0;}
+
+/* side-by-side text + figure inside a subsection (used for thread-type sections) */
+.side-fig-row{display:flex;gap:20px;align-items:flex-start;margin:14px 0 18px;}
+.side-fig-row .side-fig{flex:0 0 260px;margin:0;}
+.side-fig-row .side-fig img{max-width:260px;}
+.side-fig-row .side-text{flex:1;min-width:0;}
+.side-fig-row .side-text .def-box{margin-top:0;}
+@media(max-width:768px){
+  .side-fig-row{flex-direction:column;align-items:center;}
+  .side-fig-row .side-fig{flex-basis:auto;width:100%;max-width:320px;}
+  .side-fig-row .side-fig img{max-width:100%;}
+  .side-fig-row .side-text{width:100%;}
+}
+
+/* ===== Tables ===== */
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--radius);box-shadow:var(--shadow);margin:18px 0;background:#fff;direction:ltr;}
+table.dt{width:100%;border-collapse:collapse;font-size:.95rem;min-width:520px;}
+table.dt th{background:var(--royal);color:#fff;padding:12px 14px;font-family:'Cairo',sans-serif;font-weight:700;text-align:center;}
+table.dt td{padding:11px 14px;text-align:center;font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--mist);}
+table.dt tr:nth-child(even) td{background:var(--pearl);}
+table.dt td.lbl{font-family:'Cairo',sans-serif;text-align:right;color:var(--navy);direction:rtl;}
+table.dt td.lbl .en{direction:ltr;}
+.tbl-cap{font-weight:700;color:var(--navy);margin:20px 0 4px;font-size:1rem;direction:ltr;text-align:left;}
+
+/* ===== Examples ===== */
+.example-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin:26px 0;overflow:hidden;}
+.example-head{
+  background:linear-gradient(135deg,var(--sky),var(--azure));color:#fff;padding:14px 24px;
+  font-family:'Playfair Display',serif;font-weight:700;font-size:1.15rem;direction:ltr;text-align:left;
+}
+.example-body{padding:22px 24px;}
+.q-box{background:var(--pearl);border-radius:var(--radius-sm);padding:16px 18px;direction:ltr;text-align:left;font-family:'Source Serif 4',serif;line-height:1.75;margin-bottom:18px;}
+.given-box{background:#fff;border:1.5px dashed var(--azure);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:18px;direction:ltr;}
+.given-box .lbl{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--slate);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.step{display:flex;gap:14px;margin:18px 0;align-items:flex-start;}
+.step-num{
+  flex:0 0 32px;width:32px;height:32px;border-radius:50%;background:var(--royal);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'JetBrains Mono',monospace;font-size:.9rem;margin-top:2px;
+}
+.step-body{flex:1;min-width:0;}
+.step-title{font-weight:700;color:var(--navy);margin-bottom:4px;}
+.ans-badge{
+  display:inline-block;background:var(--mint-light);color:#0e6655;border:2px solid var(--mint);border-radius:50px;
+  padding:8px 22px;font-weight:700;font-family:'JetBrains Mono',monospace;direction:ltr;margin-top:10px;
+}
+.interp{background:var(--pearl);border-right:4px solid var(--azure);border-radius:var(--radius-sm);padding:12px 16px;margin-top:14px;font-size:.95rem;}
+
+/* ===== Practice ===== */
+.q-section{border:2px solid var(--royal);border-radius:var(--radius);padding:22px;margin:24px 0;background:#fff;box-shadow:var(--shadow);}
+.q-item{border-bottom:1px solid var(--mist);padding:16px 0;}
+.q-item:last-child{border-bottom:none;}
+.q-text{direction:ltr;text-align:left;font-family:'Source Serif 4',serif;font-weight:600;margin-bottom:10px;}
+.sol-btn{
+  font-family:'Cairo',sans-serif;font-weight:600;font-size:.9rem;background:var(--royal);color:#fff;border:none;
+  border-radius:50px;padding:8px 20px;cursor:pointer;transition:background .2s;
+}
+.sol-btn:hover{background:var(--sky);}
+.sol-btn:focus-visible{outline:3px solid var(--amber);outline-offset:2px;}
+.sol-content{display:none;margin-top:14px;padding:16px;background:var(--pearl);border-radius:var(--radius-sm);}
+
+/* ===== Footer ===== */
+footer.foot{
+  background:var(--navy);color:#fff;text-align:center;border-radius:var(--radius);margin:40px auto 0;
+  max-width:960px;padding:34px 24px;
+}
+footer.foot h4{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:8px;direction:ltr;}
+footer.foot p{opacity:.7;margin-bottom:16px;direction:ltr;}
+.tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+.tag{background:rgba(255,255,255,.1);border-radius:50px;padding:5px 14px;font-size:.82rem;direction:ltr;}
+.closing-wrap{max-width:960px;margin:24px auto 50px;padding:0 24px;}
+.closing{
+  background:linear-gradient(135deg,#0B2447,#1B4F8A);border-top:4px solid #D4AC0D;border-radius:14px;
+  box-shadow:0 8px 32px rgba(11,36,71,.18);padding:30px 28px;text-align:center;
+  font-family:'Amiri',serif;font-size:19px;line-height:2.2;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.25);
+}
+
+/* ===== Responsive ===== */
+@media(max-width:768px){
+  header.hero{padding:48px 24px 40px;}
+  .section-title{font-size:1.5rem;}
+  .content-wrapper,.toc-wrapper,.dua-wrap,.closing-wrap{padding-left:16px;padding-right:16px;}
+}
+@media(max-width:650px){
+  .toc-body{grid-template-columns:1fr;}
+}
+@media(max-width:600px){
+  body{font-size:16px;}
+  .scroll-hint{display:block;}
+  .example-body{padding:16px;}
+  .q-section{padding:14px;}
+  .def-box,.note-box,.warn-box{padding:14px 16px;}
+  .formula-box{padding:14px 8px;}
+  .step{gap:10px;}
+  .section-icon{flex-basis:44px;width:44px;height:44px;font-size:1.3rem;}
+}
+@media(max-width:380px){
+  header.hero{padding:38px 14px 32px;}
+  body{font-size:15.5px;}
+  .section-title{font-size:1.3rem;}
+  .meta-pill{font-size:.78rem;padding:5px 12px;}
+  .closing{font-size:17px;padding:22px 16px;}
+}
+</style>
+<script>
+try{ if(localStorage.getItem('eyeProtection')==='on'){ document.documentElement.setAttribute('data-eye','on'); } }catch(e){}
+</script>
+<style id="eye-protection-css">
+/* ---- Control (fixed, top-left; the existing "home" pill stays top-right) ---- */
+.eye-toggle{position:fixed; top:14px; left:14px; z-index:10000; direction:ltr; display:inline-flex; align-items:center; gap:8px; padding:6px 14px 6px 12px; border-radius:999px; cursor:pointer; margin:0; font-family:'Cairo',sans-serif; font-weight:600; font-size:0.82rem; line-height:1.4; background:rgba(255,255,255,0.93); color:#0B2447; border:1px solid rgba(11,36,71,0.28); box-shadow:0 2px 10px rgba(11,36,71,0.18); backdrop-filter:blur(6px); transition:background .2s, border-color .2s, color .2s;}
+.eye-toggle:focus-visible{outline:2px solid #F0B429; outline-offset:2px;}
+.eye-ico{font-size:1rem; line-height:1;}
+.eye-sw{position:relative; flex:0 0 30px; width:30px; height:16px; border-radius:999px; background:#A9B4C0; transition:background .2s;}
+.eye-sw::after{content:""; position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.3); transition:transform .2s;}
+.eye-st{min-width:2.3em; text-align:left; font-family:'JetBrains Mono',monospace; font-size:0.76rem; font-weight:500;}
+.eye-toggle[aria-pressed="true"]{background:#F8EFD6; border-color:#C9A25A; color:#5A3E00;}
+.eye-toggle[aria-pressed="true"] .eye-sw{background:#C8902E;}
+.eye-toggle[aria-pressed="true"] .eye-sw::after{transform:translateX(14px);}
+@media (max-width:420px){ .eye-toggle{padding:5px 10px 5px 9px; gap:6px; font-size:0.74rem;} .eye-lbl{display:none;} }
+
+/* Warm tint layer: hidden unless the mode is ON */
+.eye-overlay{display:none;}
+
+/* ---- Eye Protection ON (screen only; printing is never affected) ---- */
+@media screen{
+  html[data-eye="on"]{
+    --pearl:#EAF1F5; --mist:#D5E4EE; --white:#F8F8F5;
+    --sky:#3A84B3; --azure:#69A8CF; --amber:#E2AD3C; --gold:#C8A21C;
+    --mint:#27AD93; --mint-light:#D6EADC; --coral:#D9544A; --coral-light:#F0DCD6;
+    --slate:#556576;
+    --shadow:0 4px 20px rgba(50,44,32,0.10); --shadow-lg:0 8px 40px rgba(50,44,32,0.14);
+    --eye-paper:#F8F8F5;
+  }
+  html[data-eye="on"] body{background:linear-gradient(160deg,#F0F1F0 0%,#ECEDEC 50%,#F1F2F1 100%);}
+
+  /* Pure-white surfaces -> soft off-white */
+  html[data-eye="on"] .dua-card,
+  html[data-eye="on"] .toc-card,
+  html[data-eye="on"] figure.fig,
+  html[data-eye="on"] .table-scroll,
+  html[data-eye="on"] .example-card,
+  html[data-eye="on"] .given-box,
+  html[data-eye="on"] .q-section{background:var(--eye-paper);}
+  html[data-eye="on"] figure.fig img{background:var(--eye-paper);}
+
+  /* Bright cream callouts -> calmer tones */
+  html[data-eye="on"] .note-box{background:#F6F0DF;}
+  html[data-eye="on"] .dua-content{background:linear-gradient(135deg,#F6F1E0,#F7F2E6);}
+
+  /* Keep small bold callout titles above 4.5:1 on the calmer cream */
+  html[data-eye="on"] .note-box .box-title{color:#7A5F00;}
+
+  /* Equations on dark boxes: pure white -> very light neutral (high contrast kept) */
+  html[data-eye="on"] .formula-box mjx-container{color:#F4F4F2 !important;}
+
+  /* Images: only a whisper of softening */
+  html[data-eye="on"] img{filter:brightness(0.97) saturate(0.96);}
+
+  /* Warm tint layer: reduces the blue channel; dark text stays dark */
+  @supports (mix-blend-mode:multiply){
+    html[data-eye="on"] .eye-overlay{
+      display:block; position:fixed; inset:0; z-index:9990; pointer-events:none;
+      background:rgba(255,225,170,0.22); mix-blend-mode:multiply;
+    }
+  }
+}
+@media print{ .eye-toggle,.eye-overlay{display:none !important;} }
+</style>
+<style id="home-link-css">
+.home-link{position:fixed;top:14px;right:14px;z-index:10000;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font:600 .82rem/1.4 'Cairo',sans-serif;text-decoration:none;background:rgba(255,255,255,.93);color:#0B2447;border:1px solid rgba(11,36,71,.28);box-shadow:0 2px 10px rgba(11,36,71,.18);backdrop-filter:blur(6px)}
+.home-link:hover{background:#D6EAF8}.home-link:focus-visible{outline:2px solid #F0B429;outline-offset:2px}
+@media(max-width:420px){.home-link{padding:5px 10px;font-size:.74rem}}
+@media print{.home-link{display:none !important}}
+</style>
+</head>
+<body>
+<!-- Eye Protection control + warm tint layer -->
+<button type="button" class="eye-toggle" id="eyeToggle" aria-pressed="false" title="Eye Protection: softer brightness and less blue light for long study sessions">
+  <span class="eye-ico" aria-hidden="true">👁</span>
+  <span class="eye-lbl">Eye Protection</span>
+  <span class="eye-sw" aria-hidden="true"></span>
+  <span class="eye-st">OFF</span>
+</button>
+<div class="eye-overlay" aria-hidden="true"></div>
+
+<a class="home-link" href="Index.html" title="Back to course home">← الصفحة الرئيسية</a>
+
+<!-- ================= HEADER ================= -->
+<header class="hero">
+  <div class="badge">Mechanical Design II · Chapter 17</div>
+  <h1>Power Screws<span class="ar">البراغي الناقلة للقدرة</span></h1>
+  <p class="subtitle">Converting rotary motion into translatory motion — thread types, torque analysis, efficiency, and self-locking.</p>
+  <div class="meta-row">
+    <span class="meta-pill">⚙️ Square · Acme · Buttress</span>
+    <span class="meta-pill">📐 Torque to Raise / Lower</span>
+    <span class="meta-pill">📈 Efficiency &amp; Self-Locking</span>
+    <span class="meta-pill">🧮 3 Worked Examples</span>
+  </div>
+</header>
+
+<!-- ================= DUA ================= -->
+<div class="dua-wrap">
+  <div class="dua-card">
+    <button class="dua-btn" id="duaBtn" type="button" aria-expanded="false" aria-controls="duaContent">
+      <span>📖 دعاء</span><span class="dua-arrow">▼</span>
+    </button>
+    <div class="dua-content" id="duaContent">
+      <div class="dua-line">اللَّهُمَّ لا سَهْلَ إِلاَّ ما جَعَلْتَهُ سَهْلاً، وأنْتَ تَجْعَلُ الحَزْنَ إِذَا شِئْتَ سَهْلاً.</div>
+      <div class="dua-line">رَبِّ اشْرَحْ لِي صَدْرِي * وَيَسِّرْ لِي أَمْرِي * وَاحْلُلْ عُقْدَةً مِنْ لِسَانِي * يَفْقَهُوا قَوْلِي.</div>
+      <div class="dua-line">اللَّهُمَّ انْفَعْنِي بِمَا عَلَّمْتَنِي، وَعَلِّمْنِي مَا يَنْفَعُنِي، وَزِدْنِي عِلْمًا.</div>
+      <div class="dua-line">اللهم إني أسألك فهم النبيين، وحفظ المرسلين والملائكة المقربين، اللهم اجعل ألسنتنا عامرة بذكرك، وقلوبنا بخشيتك، وأسرارنا بطاعتك، إنك على كل شيء قدير.</div>
+      <div class="dua-line">يا حي يا قيوم برحمتك أستغيث، أصلح لي شأني كله ولا تكلني إلى نفسي طرفة عين.</div>
+      <div class="dua-line">اللهم يا جامع الناس ليوم لا ريب فيه، اجمع علي ضالتي.</div>
+      <div class="dua-line">اللهم إني استودعتك ما قرأت وما حفظت وما تعلمت، فرده عند حاجتي إليه، إنك على كل شيء قدير، وحسبنا الله ونعم الوكيل.</div>
+      <div class="dua-line">أستغفر الله، أستغفر الله، أستغفر الله.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= TOC ================= -->
+<nav class="toc-wrapper" aria-label="Table of contents">
+  <div class="toc-card">
+    <div class="toc-head">Table of Contents</div>
+    <div class="toc-body">
+      <a class="toc-item" href="#s1"><span class="toc-num">1</span><span>Introduction — Power Screws</span></a>
+      <a class="toc-item" href="#s2"><span class="toc-num">2</span><span>Types of Screw Threads</span></a>
+      <a class="toc-item" href="#s3"><span class="toc-num">3</span><span>Torque to Raise the Load</span></a>
+      <a class="toc-item" href="#s4"><span class="toc-num">4</span><span>Thrust Collar &amp; Total Torque</span></a>
+      <a class="toc-item" href="#s5"><span class="toc-num">5</span><span>Torque to Lower the Load</span></a>
+      <a class="toc-item" href="#s6"><span class="toc-num">6</span><span>Coefficient of Friction</span></a>
+      <a class="toc-item" href="#s7"><span class="toc-num">7</span><span>Efficiency of Square Threaded Screws</span></a>
+      <a class="toc-item" href="#s8"><span class="toc-num">8</span><span>Maximum Efficiency</span></a>
+      <a class="toc-item" href="#s9"><span class="toc-num">9</span><span>Efficiency vs Helix Angle</span></a>
+      <a class="toc-item" href="#s10"><span class="toc-num">10</span><span>Overhauling &amp; Self-Locking</span></a>
+      <a class="toc-item" href="#s11"><span class="toc-num">11</span><span>Solved Examples</span></a>
+      <a class="toc-item" href="#s12"><span class="toc-num">12</span><span>Practice Questions</span></a>
+    </div>
+  </div>
+</nav>
+
+<main class="content-wrapper" style="margin-top:50px;">
+
+<!-- ================= 1. INTRODUCTION ================= -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <div class="section-icon">🔩</div>
+    <div><h2 class="section-title">Introduction</h2><div class="section-sub">Art. 17.1 · Power screws</div></div>
+  </div>
+
+  <div class="def-box">
+    <div class="box-title">📘 Definition — Power Screw</div>
+    <p>الـ <span class="en"><strong>Power screws</strong></span> (وبتتسمى كمان <span class="en"><strong>translation screws</strong></span>) بتُستخدم علشان تحوّل الحركة الدورانية <span class="en">(rotary motion)</span> إلى حركة انتقالية <span class="en">(translatory motion)</span> — أفقية أو رأسية.</p>
+  </div>
+
+  <p>الفكرة ببساطة: عندك <span class="en">rotation</span> من إيدك أو موتور، وعايز <span class="en">linear force</span> كبيرة. مثال <span class="en">screw jack</span> (كوريك رفع العربية): قوة صغيرة بتتطبق في المستوى الأفقي بتقدر ترفع أو تنزل <span class="en">load</span> كبير جدًا. وفي <span class="en">lead screw</span> بتاع المخرطة، الحركة الدورانية موجودة لكن الـ <span class="en">tool</span> لازم يتقدم في اتجاه القطع ضد مقاومة المعدن.</p>
+
+  <p>الـ Power screws بتُستخدم كمان في: <span class="en">vices</span> (مناجل)، <span class="en">testing machines</span> (آلات الاختبار)، <span class="en">presses</span> (مكابس).</p>
+
+  <div class="photo-row">
+    <figure class="fig"><img src="assets/lecture-1/bench-vice.jpg" alt="Red heavy-duty bench vice with a silver handle and screw mechanism" loading="lazy"><figcaption>Bench vice — مِنجلة</figcaption></figure>
+    <figure class="fig"><img src="assets/lecture-1/screw-jacks.jpg" alt="Two blue screw jacks with vertical threaded rods" loading="lazy"><figcaption>Screw jacks — كوريك رفع</figcaption></figure>
+  </div>
+
+  <h3 class="sub">Three possible arrangements</h3>
+  <p>في أغلب الـ power screws الـ <span class="en"><strong>nut</strong></span> بيتحرك axially ضد القوة المقاومة والـ <span class="en"><strong>screw</strong></span> بيلف في الـ <span class="en">bearings</span>. لكن فيه ترتيبات تانية:</p>
+  <div class="table-scroll"><table class="dt">
+    <tr><th>#</th><th>Screw</th><th>Nut</th></tr>
+    <tr><td>(i)</td><td class="lbl"><span class="en">Rotates</span> في الـ bearings</td><td class="lbl">بيتحرك <span class="en">axially</span></td></tr>
+    <tr><td>(ii)</td><td class="lbl">بيلف <strong>و</strong> بيتحرك <span class="en">axially</span></td><td class="lbl"><span class="en">Stationary</span> (ثابت)</td></tr>
+    <tr><td>(iii)</td><td class="lbl">بيتحرك <span class="en">axially</span> من غير لف</td><td class="lbl">بيلف <span class="en">(rotates)</span></td></tr>
+  </table></div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ================= 2. THREAD TYPES ================= -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <div class="section-icon">⚙️</div>
+    <div><h2 class="section-title">Types of Screw Threads</h2><div class="section-sub">Art. 17.2 · Square · Acme · Buttress</div></div>
+  </div>
+
+  <p>فيه <strong>ثلاث أنواع</strong> من الـ threads بتتستخدم أكتر حاجة في الـ power screws. في الرسومات، <span class="mono">p</span> = <span class="en">pitch</span> (المسافة بين ثريدين) و <span class="mono">h</span> = <span class="en">depth of thread</span> (عمق السن).</p>
+
+  <h3 class="sub">1 · Square Thread</h3>
+  <div class="side-fig-row">
+    <figure class="fig side-fig"><img src="assets/lecture-1/thread-square.png" alt="Square thread profile with pitch p, width p/2 and depth h" loading="lazy"><figcaption>(a) Square thread</figcaption></figure>
+    <div class="side-text">
+      <div class="def-box">
+        <div class="box-title">📘 Square Thread</div>
+        <p>مناسب لنقل القدرة في <strong>أي اتجاه</strong> (either direction). بيدي <strong>maximum efficiency</strong> وأقل <span class="en">radial (bursting) pressure</span> على الـ nut.</p>
+      </div>
+    </div>
+  </div>
+  <div class="formula-box"><div class="eq-scroll">\[ h = 0.5\,p \]</div></div>
+  <ul style="padding-right:22px;margin-bottom:14px;">
+    <li><strong>العيب:</strong> صعب يتقطع بالـ <span class="en">taps and dies</span>، فبيتعمل على <span class="en">lathe</span> بـ <span class="en">single point tool</span>.</li>
+    <li>ما ينفعش يتعوّض بسهولة عن الـ <span class="en">wear</span> <span class="en">(cannot be easily compensated for wear)</span>.</li>
+    <li><strong>الاستخدام:</strong> <span class="en">screw jacks, presses, clamping devices</span>.</li>
+  </ul>
+
+  <h3 class="sub">2 · Acme (Trapezoidal) Thread</h3>
+  <div class="side-fig-row">
+    <figure class="fig side-fig"><img src="assets/lecture-1/thread-acme.png" alt="Acme thread profile with 29 degree angle and crest 0.37p" loading="lazy"><figcaption>(b) Acme thread</figcaption></figure>
+    <div class="side-text">
+      <div class="def-box">
+        <div class="box-title">📘 Acme Thread</div>
+        <p>تعديل على الـ square thread. الجانبين ليهم <strong>ميل بسيط</strong> (زاوية <span class="mono">29°</span>). بيتقطع بالـ <span class="en">dies</span> فـ <strong>أسهل في التصنيع</strong> من الـ square.</p>
+      </div>
+    </div>
+  </div>
+  <div class="formula-box"><div class="eq-scroll">\[ h = 0.5\,p + 0.25\ \text{mm} \]</div></div>
+  <ul style="padding-right:22px;margin-bottom:14px;">
+    <li>الميل بيقلل الـ <span class="en">efficiency</span> شوية عن الـ square.</li>
+    <li>بيضيف <span class="en">bursting pressure</span> على الـ nut، لكن بيزوّد مساحة الـ <span class="en">shear</span> (area in shear).</li>
+    <li>بيتستخدم لما نحتاج <span class="en">split nut</span> ولما نحتاج نعوّض الـ wear بـ <span class="en">adjustable split nut</span> — زي <span class="en">lead screw</span> بتاع المخرطة.</li>
+  </ul>
+
+  <h3 class="sub">3 · Buttress Thread</h3>
+  <div class="side-fig-row">
+    <figure class="fig side-fig"><img src="assets/lecture-1/thread-buttress.png" alt="Buttress thread profile with 45 degree flank and crest 0.125p" loading="lazy"><figcaption>(c) Buttress thread</figcaption></figure>
+    <div class="side-text">
+      <div class="def-box">
+        <div class="box-title">📘 Buttress Thread</div>
+        <p>بيُستخدم لما القوى الكبيرة بتشتغل <strong>في اتجاه واحد بس</strong> على طول محور الـ screw. أحد الجانبين رأسي تمامًا والتاني مائل <span class="mono">45°</span>.</p>
+      </div>
+    </div>
+  </div>
+  <div class="formula-box"><div class="eq-scroll">\[ h = 0.75\,p \]</div></div>
+  <ul style="padding-right:22px;margin-bottom:14px;">
+    <li>بيجمع <strong>كفاءة الـ square</strong> العالية + <strong>سهولة القطع</strong> بتاعة الـ acme.</li>
+    <li><strong>أقوى</strong> من باقي الأنواع بسبب <span class="en">greater thickness at the base</span>.</li>
+    <li>استخدامه محدود في نقل القدرة؛ بيُستخدم في <span class="en">light jack screws and vices</span>.</li>
+  </ul>
+
+  <div class="table-scroll"><table class="dt">
+    <tr><th>Thread</th><th>Depth <span class="en">h</span></th><th>Crest width</th><th>Angle</th></tr>
+    <tr><td class="lbl"><span class="en">Square</span></td><td>0.5 p</td><td>p / 2</td><td>—</td></tr>
+    <tr><td class="lbl"><span class="en">Acme</span></td><td>0.5 p + 0.25 mm</td><td>0.37 p</td><td>29°</td></tr>
+    <tr><td class="lbl"><span class="en">Buttress</span></td><td>0.75 p</td><td>0.125 p</td><td>45° (flank)</td></tr>
+  </table></div>
+
+  <div class="note-box">
+    <div class="box-title">📝 Note</div>
+    <p>في السلايد المعادلة مكتوبة <span class="mono">h = 0.5p + 0.25</span> بدون وحدة، لكن الرسم الأصلي (والمرجع) بيوضح إن الـ <span class="mono">0.25</span> بالـ <strong>mm</strong>. عشان كده كتبناها بالوحدة.</p>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ================= 3. TORQUE TO RAISE ================= -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <div class="section-icon">⬆️</div>
+    <div><h2 class="section-title">Torque to Raise the Load</h2><div class="section-sub">Art. 17.4 · Square threaded screws</div></div>
+  </div>
+
+  <p>الـ <span class="en">screw jack</span> بيتحط عليه الـ <span class="en">load</span> فوق راس الـ <span class="en">square threaded rod</span>، والـ rod بيلف بقوة بتتطبق على آخر <span class="en">lever</span> لرفع أو تنزيل الحمل.</p>
+
+  <figure class="fig fig-md"><img src="assets/lecture-1/fig-17-2-screw-jack.png" alt="Fig 17.2 screw jack and thrust collar with dimensions W, l, p, dc, d, do, R, R1, R2" loading="lazy"><figcaption>Fig. 17.2 — (a) Screw jack · (b) Thrust collar. المادة: الـ screw عادةً <span class="en">steel</span> والـ nut من <span class="en">cast iron / gun metal / phosphor bronze</span> لتقليل الـ wear.</figcaption></figure>
+
+  <figure class="fig fig-lg"><img src="assets/lecture-1/power-screw-assembly.jpg" alt="Power screw assembly: load, screw, nut, thrust collar, mean diameter dm, helix angle alpha, flank angle theta, collar radii rci and rco" loading="lazy"><figcaption>Power screw assembly — <span class="en">d<sub>m</sub></span> mean diameter, <span class="en">α</span> helix angle, <span class="en">θ</span> flank angle, <span class="en">rc<sub>i</sub></span> / <span class="en">rc<sub>o</sub></span> collar radii.</figcaption></figure>
+
+  <h3 class="sub">The key idea — unwinding one thread turn</h3>
+  <div class="def-box">
+    <div class="box-title">💡 Key Concept — الـ thread عبارة عن Inclined Plane</div>
+    <p>تخيّل إنك <strong>فكّيت لفّة واحدة</strong> من الـ thread وفرّدتها على مستوى. هتطلع لك <strong>inclined plane</strong> (مستوى مائل). ومن هنا كل التحليل بيتحوّل لمسألة block على مستوى مائل — نفس مبدأ الـ screw jack بالظبط.</p>
+  </div>
+
+  <figure class="fig fig-md"><img src="assets/lecture-1/fig-17-3-development.png" alt="Fig 17.3 development of a screw as right triangle with base pi d and height p, and forces on the screw" loading="lazy"><figcaption>Fig. 17.3 — (a) Development of a screw · (b) Forces acting on the screw</figcaption></figure>
+
+  <h3 class="sub">Notation</h3>
+  <div class="table-scroll"><table class="dt">
+    <tr><th>Symbol</th><th>Meaning</th></tr>
+    <tr><td>\(p\)</td><td class="lbl"><span class="en">Pitch of the screw</span></td></tr>
+    <tr><td>\(d\)</td><td class="lbl"><span class="en">Mean diameter of the screw</span></td></tr>
+    <tr><td>\(\alpha\)</td><td class="lbl"><span class="en">Helix angle</span></td></tr>
+    <tr><td>\(P\)</td><td class="lbl"><span class="en">Effort applied at the circumference of the screw to lift the load</span></td></tr>
+    <tr><td>\(W\)</td><td class="lbl"><span class="en">Load to be lifted</span></td></tr>
+    <tr><td>\(\mu = \tan\phi\)</td><td class="lbl"><span class="en">Coefficient of friction between screw and nut</span> (\(\phi\) = <span class="en">friction angle</span>)</td></tr>
+  </table></div>
+
+  <p>من هندسة الشكل (المثلث القائم — القاعدة = محيط الـ mean circle <span class="mono">πd</span> والارتفاع = <span class="mono">p</span>):</p>
+  <div class="formula-box"><div class="box-title">Helix angle</div><div class="eq-scroll">\[ \tan\alpha = \frac{p}{\pi d} \]</div></div>
+
+  <div class="note-box">
+    <div class="box-title">📝 لماذا القوة P أفقية؟</div>
+    <p>لأن مبدأ الـ screw jack زي الـ inclined plane، فالقوة على المحيط بنعتبرها <strong>أفقية</strong>. ولأن الحمل بيتـ<strong>رفع</strong>، الـ <span class="en">friction force</span> <span class="mono">F = μR<sub>N</sub></span> بتشتغل <strong>لتحت</strong> (بتقاوم الحركة لفوق).</p>
+  </div>
+
+  <h3 class="sub">Equilibrium equations</h3>
+  <p><strong>(1) بالتحليل موازي للمستوى</strong> <span class="en">(along the plane)</span>:</p>
+  <div class="formula-box"><div class="eq-scroll">\[ P\cos\alpha = W\sin\alpha + F = W\sin\alpha + \mu R_N \tag{1} \]</div></div>
+  <p><strong>(2) بالتحليل عمودي على المستوى</strong> <span class="en">(perpendicular)</span>:</p>
+  <div class="formula-box"><div class="eq-scroll">\[ R_N = P\sin\alpha + W\cos\alpha \tag{2} \]</div></div>
+
+  <h3 class="sub">Derivation of \(P\)</h3>
+  <p>بنعوّض عن <span class="mono">R<sub>N</sub></span> من (2) في (1):</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \begin{aligned}
+  P\cos\alpha &= W\sin\alpha + \mu\,(P\sin\alpha + W\cos\alpha) \\[6pt]
+              &= W\sin\alpha + \mu P\sin\alpha + \mu W\cos\alpha \\[6pt]
+  P\cos\alpha - \mu P\sin\alpha &= W\sin\alpha + \mu W\cos\alpha \\[6pt]
+  P\,(\cos\alpha - \mu\sin\alpha) &= W\,(\sin\alpha + \mu\cos\alpha)
+  \end{aligned}
+  \]
+  </div></div>
+  <div class="formula-box"><div class="eq-scroll">\[ P = W\times\frac{\sin\alpha + \mu\cos\alpha}{\cos\alpha - \mu\sin\alpha} \tag{3} \]</div></div>
+
+  <p>دلوقتي بنعوّض <span class="mono">μ = tan φ</span> ونضرب البسط والمقام في <span class="mono">cos φ</span>:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \begin{aligned}
+  P &= W\times\frac{\sin\alpha + \tan\phi\,\cos\alpha}{\cos\alpha - \tan\phi\,\sin\alpha} \\[10pt]
+  P &= W\times\frac{\sin\alpha\cos\phi + \sin\phi\cos\alpha}{\cos\alpha\cos\phi - \sin\alpha\sin\phi} \\[10pt]
+    &= W\times\frac{\sin(\alpha+\phi)}{\cos(\alpha+\phi)}
+  \end{aligned}
+  \]
+  </div></div>
+  <div class="formula-box"><div class="box-title">Effort to raise the load</div><div class="eq-scroll">\[ \boxed{\,P = W\tan(\alpha+\phi)\,} \]</div></div>
+
+  <h3 class="sub">Torque to overcome screw–nut friction</h3>
+  <div class="formula-box"><div class="eq-scroll">\[ T_1 = P\times\frac{d}{2} = W\tan(\alpha+\phi)\cdot\frac{d}{2} \tag{4} \]</div></div>
+
+  <div class="note-box">
+    <div class="box-title">📝 Note</div>
+    <p>لو <span class="mono">α &gt; φ</span> (في حالة الـ lowering) بتبقى <span class="mono">P = W·tan(α − φ)</span>. هنرجع لها في قسم الـ overhauling.</p>
+  </div>
+
+  <div class="def-box">
+    <div class="box-title">💡 Design Insight — Physical meaning</div>
+    <p>الـ <span class="mono">tan(α+φ)</span> معناه إن الـ effort محتاج يتغلّب على حاجتين: <strong>الميل الهندسي</strong> (α) اللي بيرفع الحمل، <strong>+ الاحتكاك</strong> (φ) اللي بيقاوم. لو الاحتكاك صفر (φ = 0) بيرجع <span class="mono">P = W tan α</span> — الحالة المثالية (ideal).</p>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ================= 4. THRUST COLLAR ================= -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <div class="section-icon">🛞</div>
+    <div><h2 class="section-title">Thrust Collar &amp; Total Torque</h2><div class="section-sub">Art. 17.4 · Collar friction · Mechanical advantage</div></div>
+  </div>
+
+  <div class="def-box">
+    <div class="box-title">📘 Thrust Collar</div>
+    <p>لما الـ <span class="en">axial load</span> بيتشال بواسطة <span class="en"><strong>thrust collar</strong></span> بحيث إن الحمل <strong>ما بيلفّش</strong> مع الـ screw، بيبقى فيه <strong>احتكاك إضافي</strong> عند الـ collar محتاج torque تاني للتغلب عليه، نسميه <span class="mono">T<sub>2</sub></span>.</p>
+  </div>
+
+  <div class="formula-box">
+    <div class="box-title">Collar friction torque</div>
+    <div class="eq-scroll">
+    \[
+    T_2 = \frac{2}{3}\times\mu_1\times W\left[\frac{(R_1)^3 - (R_2)^3}{(R_1)^2 - (R_2)^2}\right]
+    \qquad \text{(uniform pressure)}
+    \]
+    </div>
+    <div class="eq-scroll">
+    \[
+    T_2 = \mu_1\times W\left(\frac{R_1+R_2}{2}\right) = \mu_1 W R
+    \qquad \text{(uniform wear)}
+    \]
+    </div>
+  </div>
+
+  <div class="table-scroll"><table class="dt">
+    <tr><th>Symbol</th><th>Meaning</th></tr>
+    <tr><td>\(R_1,\ R_2\)</td><td class="lbl"><span class="en">Outside and inside radii of collar</span></td></tr>
+    <tr><td>\(R = \dfrac{R_1+R_2}{2}\)</td><td class="lbl"><span class="en">Mean radius of collar</span></td></tr>
+    <tr><td>\(\mu_1\)</td><td class="lbl"><span class="en">Coefficient of friction for the collar</span></td></tr>
+  </table></div>
+
+  <div class="warn-box">
+    <div class="box-title">⚠️ Common mistake</div>
+    <p>فيه <strong>معاملين احتكاك مختلفين</strong>: <span class="mono">μ = tan φ</span> بين الـ screw والـ nut، و <span class="mono">μ₁</span> عند الـ collar. ما تخلطش بينهم! وكمان <span class="mono">T₂</span> بيظهر <strong>بس</strong> لو الحمل مش بيلف مع الـ screw.</p>
+  </div>
+
+  <h3 class="sub">Total torque</h3>
+  <div class="formula-box"><div class="eq-scroll">\[ T = T_1 + T_2 \tag{7} \]</div></div>
+  <p>لو اتطبق effort <span class="mono">P₁</span> عند نهاية الـ lever بطول <span class="mono">l</span>، فالـ torque الكلي المطلوب للتغلب على الاحتكاك لازم يساوي الـ torque المطبق عند نهاية الـ lever:</p>
+  <div class="formula-box"><div class="eq-scroll">\[ T = P\cdot\frac{d}{2} = P_1\times l \tag{8} \]</div></div>
+
+  <h3 class="sub">Mean diameter</h3>
+  <p>لو اتدّى <span class="en">nominal (outside) diameter</span> <span class="mono">d<sub>o</sub></span> و <span class="en">core (root) diameter</span> <span class="mono">d<sub>c</sub></span>:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  d = \frac{d_o + d_c}{2} \tag{9}
+  \]
+  \[
+  d = \frac{d_o + d_c}{2} = d_o - \frac{p}{2} = d_c + \frac{p}{2} \tag{10}
+  \]
+  </div></div>
+
+  <h3 class="sub">Mechanical Advantage</h3>
+  <p>الـ <span class="en">M.A.</span> = نسبة الحمل المرفوع <span class="mono">W</span> إلى الـ effort <span class="mono">P₁</span> عند نهاية الـ lever:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \begin{aligned}
+  \text{M.A.} &= \frac{W}{P_1} = \frac{W\times 2l}{P\times d}
+  \qquad \left(\because\ P\times\tfrac{d}{2} = P_1\times l\ \text{ or }\ P_1 = \frac{P\times d}{2l}\right) \\[10pt]
+  &= \frac{W\times 2l}{W\tan(\alpha+\phi)\,d} = \frac{2l}{d\,\tan(\alpha+\phi)}
+  \end{aligned}
+  \]
+  </div></div>
+
+  <div class="def-box">
+    <div class="box-title">💡 Design Insight</div>
+    <p>الـ M.A. بيزيد لو زوّدنا طول الـ lever <span class="mono">l</span> — علشان كده الكوريك بيبقى ليه ذراع طويل. وبيقل لو زاد الاحتكاك (φ أكبر).</p>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ================= 5. TORQUE TO LOWER ================= -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <div class="section-icon">⬇️</div>
+    <div><h2 class="section-title">Torque to Lower the Load</h2><div class="section-sub">Art. 17.5 · Friction reverses direction</div></div>
+  </div>
+
+  <div class="def-box">
+    <div class="box-title">💡 Key Concept</div>
+    <p>لما الحمل بيتـ<strong>نزّل</strong>، الـ <span class="en">friction force</span> <span class="mono">F = μR<sub>N</sub></span> بتشتغل <strong>لفوق</strong> (عكس حالة الرفع). ده اللي بيغيّر الإشارة في المعادلات.</p>
+  </div>
+
+  <figure class="fig fig-md"><img src="assets/lecture-1/fig-17-4-forces.png" alt="Free body diagram of block on inclined plane with W, P, R_N, F and their components" loading="lazy"><figcaption>Fig. 17.4 — Free-body diagram (block على inclined plane بزاوية α، الاحتكاك F لأعلى)</figcaption></figure>
+
+  <p><strong>(1) موازي للمستوى:</strong></p>
+  <div class="formula-box"><div class="eq-scroll">\[ P\cos\alpha = F - W\sin\alpha = \mu R_N - W\sin\alpha \tag{i} \]</div></div>
+  <p><strong>(2) عمودي على المستوى:</strong></p>
+  <div class="formula-box"><div class="eq-scroll">\[ R_N = W\cos\alpha - P\sin\alpha \tag{ii} \]</div></div>
+
+  <h3 class="sub">Derivation</h3>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \begin{aligned}
+  P\cos\alpha &= \mu\,(W\cos\alpha - P\sin\alpha) - W\sin\alpha \\[6pt]
+              &= \mu W\cos\alpha - \mu P\sin\alpha - W\sin\alpha \\[6pt]
+  P\cos\alpha + \mu P\sin\alpha &= \mu W\cos\alpha - W\sin\alpha \\[6pt]
+  P\,(\cos\alpha + \mu\sin\alpha) &= W\,(\mu\cos\alpha - \sin\alpha)
+  \end{aligned}
+  \]
+  </div></div>
+  <div class="formula-box"><div class="eq-scroll">\[ P = W\times\frac{\mu\cos\alpha - \sin\alpha}{\cos\alpha + \mu\sin\alpha} \]</div></div>
+
+  <p>بالتعويض <span class="mono">μ = tan φ</span> وضرب البسط والمقام في <span class="mono">cos φ</span>:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \begin{aligned}
+  P &= W\times\frac{\tan\phi\cos\alpha - \sin\alpha}{\cos\alpha + \tan\phi\sin\alpha} \\[10pt]
+  P &= W\times\frac{\sin\phi\cos\alpha - \cos\phi\sin\alpha}{\cos\phi\cos\alpha + \sin\phi\sin\alpha} \\[10pt]
+    &= W\times\frac{\sin(\phi-\alpha)}{\cos(\phi-\alpha)}
+  \end{aligned}
+  \]
+  </div></div>
+  <div class="formula-box"><div class="box-title">Effort &amp; torque to lower the load</div><div class="eq-scroll">
+  \[ \boxed{\,P = W\tan(\phi-\alpha)\,} \qquad T_1 = P\times\frac{d}{2} = W\tan(\phi-\alpha)\,\frac{d}{2} \]
+  </div></div>
+
+  <div class="table-scroll"><table class="dt">
+    <tr><th>Case</th><th>Friction acts</th><th>Effort</th></tr>
+    <tr><td class="lbl"><strong>Raising</strong> the load</td><td class="lbl">لتحت <span class="en">(down the plane)</span></td><td>\(P = W\tan(\alpha+\phi)\)</td></tr>
+    <tr><td class="lbl"><strong>Lowering</strong> the load</td><td class="lbl">لفوق <span class="en">(up the plane)</span></td><td>\(P = W\tan(\phi-\alpha)\)</td></tr>
+  </table></div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ================= 6. COEFFICIENT OF FRICTION ================= -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <div class="section-icon">🧊</div>
+    <div><h2 class="section-title">Coefficient of Friction</h2><div class="section-sub">Art. 17.11 · Tables 17.5 &amp; 17.6</div></div>
+  </div>
+
+  <div class="def-box">
+    <div class="box-title">📘 What does μ depend on?</div>
+    <ol style="padding-right:22px;">
+      <li><span class="en">Material of screw and nut</span></li>
+      <li><span class="en">Workmanship in cutting screw</span></li>
+      <li><span class="en">Quality of lubrication</span></li>
+      <li><span class="en">Unit bearing pressure</span></li>
+      <li><span class="en">Rubbing speeds</span></li>
+    </ol>
+  </div>
+
+  <p>قيمة الـ μ <strong>ما بتتغيرش كتير</strong> مع اختلاف الـ material أو الـ load أو السرعة — <strong>إلا في حالة الـ starting</strong>. مع <span class="en">good lubrication</span> و <span class="en">average workmanship</span> ممكن نفترضها بين <span class="mono">0.10</span> و <span class="mono">0.15</span>. (الـ screw عادةً <span class="en">steel</span> والـ nut من <span class="en">cast iron / gun metal / phosphor bronze</span> لتقليل الـ wear.)</p>
+
+  <div class="tbl-cap">Table 17.5 — Coefficient of friction under different conditions</div>
+  <div class="scroll-hint">← اسحب لرؤية المزيد →</div>
+  <div class="table-scroll"><table class="dt">
+    <tr><th>S.No.</th><th>Condition</th><th>Starting</th><th>Running</th></tr>
+    <tr><td>1</td><td class="lbl"><span class="en">High grade materials and workmanship and best running conditions</span></td><td>0.14</td><td>0.10</td></tr>
+    <tr><td>2</td><td class="lbl"><span class="en">Average quality of materials and workmanship and average running conditions</span></td><td>0.18</td><td>0.13</td></tr>
+    <tr><td>3</td><td class="lbl"><span class="en">Poor workmanship or very slow and infrequent motion with indifferent lubrication or newly machined surface</span></td><td>0.21</td><td>0.15</td></tr>
+  </table></div>
+
+  <p>وإذا استُخدمت <strong>thrust collars</strong> تُؤخذ القيم من الجدول التالي:</p>
+  <div class="tbl-cap">Table 17.6 — Coefficient of friction when thrust collars are used</div>
+  <div class="scroll-hint">← اسحب لرؤية المزيد →</div>
+  <div class="table-scroll"><table class="dt">
+    <tr><th>S.No.</th><th>Materials</th><th>Starting</th><th>Running</th></tr>
+    <tr><td>1</td><td class="lbl"><span class="en">Soft steel on cast iron</span></td><td>0.17</td><td>0.12</td></tr>
+    <tr><td>2</td><td class="lbl"><span class="en">Hardened steel on cast iron</span></td><td>0.15</td><td>0.09</td></tr>
+    <tr><td>3</td><td class="lbl"><span class="en">Soft steel on bronze</span></td><td>0.10</td><td>0.08</td></tr>
+    <tr><td>4</td><td class="lbl"><span class="en">Hardened steel on bronze</span></td><td>0.08</td><td>0.06</td></tr>
+  </table></div>
+
+  <div class="def-box">
+    <div class="box-title">💡 Design Insight</div>
+    <p>في <strong>كل</strong> الحالات في الجدولين، الـ <strong>starting friction أعلى من الـ running friction</strong>. يعني أول لحظة تحريك دايمًا أصعب من الاستمرار في الحركة.</p>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ================= 7. EFFICIENCY ================= -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <div class="section-icon">📈</div>
+    <div><h2 class="section-title">Efficiency of Square Threaded Screws</h2><div class="section-sub">Art. 17.6 · η = ideal effort / actual effort</div></div>
+  </div>
+
+  <div class="def-box">
+    <div class="box-title">📘 Definition — Efficiency</div>
+    <p>الـ <span class="en"><strong>efficiency</strong></span> = النسبة بين الـ <strong>ideal effort</strong> (الجهد المطلوب لتحريك الحمل <strong>بدون احتكاك</strong>) والـ <strong>actual effort</strong> (الجهد المطلوب <strong>مع الاحتكاك</strong>).</p>
+  </div>
+
+  <p>عرفنا إن: <span class="mono">P = W·tan(α+φ)</span> حيث <span class="mono">W</span> الحمل، <span class="mono">α</span> الـ helix angle، <span class="mono">φ</span> الـ friction angle، و <span class="mono">μ = tan φ</span>.</p>
+  <p>لو مفيش احتكاك بين الـ screw والـ nut فـ <span class="mono">φ = 0</span>، والـ effort المثالي:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \begin{aligned}
+  P_0 &= W\tan\alpha \qquad (\phi = 0) \\[10pt]
+  \eta &= \frac{\text{Ideal effort}}{\text{Actual effort}} = \frac{P_0}{P}
+       = \frac{W\tan\alpha}{W\tan(\alpha+\phi)}
+  \end{aligned}
+  \]
+  </div></div>
+  <div class="formula-box"><div class="box-title">Efficiency of a square threaded screw</div><div class="eq-scroll">\[ \boxed{\,\eta = \frac{\tan\alpha}{\tan(\alpha+\phi)}\,} \tag{17} \]</div></div>
+
+  <div class="note-box">
+    <div class="box-title">📝 مهم</div>
+    <p>الـ efficiency هنا <strong>مستقلة عن الحمل W</strong> (لأن الـ W اتشال من البسط والمقام). بتعتمد بس على <span class="mono">α</span> و <span class="mono">φ</span>.</p>
+  </div>
+
+  <h3 class="sub">Including collar friction</h3>
+  <p>المعادلة اللي فوق بتحسب احتكاك الـ screw <strong>بس</strong>. لو حسبنا احتكاك الـ screw <strong>و</strong> الـ collar:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \eta = \frac{\text{Torque required to move load, neglecting friction}}{\text{Torque required, including screw and collar friction}}
+  = \frac{T_0}{T} = \frac{P_0\times d/2}{P\times d/2 + \mu_1\,W\,R}
+  \]
+  </div></div>
+
+  <h3 class="sub">Efficiency as M.A. ÷ V.R.</h3>
+  <p>الـ efficiency ممكن كمان تتعرّف على إنها <strong>M.A. / V.R.</strong> (نسبة الـ mechanical advantage للـ velocity ratio). عرفنا الـ M.A. قبل كده:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \text{M.A.} = \frac{W}{P_1} = \frac{W\times 2l}{P\times d} = \frac{W\times 2l}{W\tan(\alpha+\phi)\,d} = \frac{2l}{d\tan(\alpha+\phi)}
+  \]
+  </div></div>
+  <p>والـ <span class="en">velocity ratio</span>:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \text{V.R.} = \frac{\text{Distance moved by effort }(P_1)\text{ in one revolution}}{\text{Distance moved by load }(W)\text{ in one revolution}}
+  = \frac{2\pi l}{p} = \frac{2\pi l}{\tan\alpha\times\pi d} = \frac{2l}{d\tan\alpha}
+  \qquad \left(\because\ \tan\alpha = \tfrac{p}{\pi d}\right)
+  \]
+  </div></div>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \eta = \frac{\text{M.A.}}{\text{V.R.}} = \frac{2l}{d\tan(\alpha+\phi)}\times\frac{d\tan\alpha}{2l} = \frac{\tan\alpha}{\tan(\alpha+\phi)}
+  \]
+  </div></div>
+  <p>نفس النتيجة ✅ — يعني التعريفين متطابقين.</p>
+</section>
+
+<hr class="section-divider">
+
+<!-- ================= 8. MAX EFFICIENCY ================= -->
+<section class="section" id="s8">
+  <div class="section-header">
+    <div class="section-icon">🎯</div>
+    <div><h2 class="section-title">Maximum Efficiency</h2><div class="section-sub">Art. 17.7 · Optimum helix angle</div></div>
+  </div>
+
+  <p>بنبدأ من المعادلة اللي عرفناها:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \eta = \frac{\tan\alpha}{\tan(\alpha+\phi)}
+  = \frac{\sin\alpha/\cos\alpha}{\sin(\alpha+\phi)/\cos(\alpha+\phi)}
+  = \frac{\sin\alpha\,\cos(\alpha+\phi)}{\cos\alpha\,\sin(\alpha+\phi)}
+  \]
+  </div></div>
+  <p>بنضرب البسط والمقام في <strong>2</strong> ونستخدم الـ identities:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \begin{aligned}
+  2\sin A\cos B &= \sin(A+B) + \sin(A-B) \\
+  2\cos A\sin B &= \sin(A+B) - \sin(A-B)
+  \end{aligned}
+  \]
+  </div></div>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \eta = \frac{2\sin\alpha\,\cos(\alpha+\phi)}{2\cos\alpha\,\sin(\alpha+\phi)}
+  = \frac{\sin(2\alpha+\phi) - \sin\phi}{\sin(2\alpha+\phi) + \sin\phi}
+  \]
+  </div></div>
+
+  <div class="def-box">
+    <div class="box-title">💡 Key Concept</div>
+    <p>في المعادلة دي الـ <span class="mono">φ</span> ثابتة (خاصية الاحتكاك). الـ <span class="mono">η</span> بتوصل <strong>أقصى قيمة</strong> لما <span class="mono">sin(2α+φ)</span> يكون أكبر ما يمكن.</p>
+  </div>
+
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \begin{aligned}
+  \sin(2\alpha+\phi) &= 1 \\[6pt]
+  2\alpha + \phi &= 90^\circ \quad\text{or}\quad 2\alpha = 90^\circ - \phi \\[6pt]
+  \eta_{\max} &= \frac{\sin(90^\circ-\phi+\phi) - \sin\phi}{\sin(90^\circ-\phi+\phi) + \sin\phi}
+  = \frac{\sin 90^\circ - \sin\phi}{\sin 90^\circ + \sin\phi}
+  \end{aligned}
+  \]
+  </div></div>
+  <div class="formula-box"><div class="box-title">Maximum efficiency</div><div class="eq-scroll">\[ \boxed{\,\eta_{\max} = \frac{1-\sin\phi}{1+\sin\phi}\,} \]</div></div>
+
+  <div class="def-box">
+    <div class="box-title">💡 Design Insight</div>
+    <p>أفضل زاوية: <span class="mono">α = 45° − φ/2</span>. والـ <span class="mono">η<sub>max</sub></span> بتعتمد <strong>بس على φ</strong> — يعني على الاحتكاك. كل ما قلّلنا الاحتكاك (تزييت جيد) كل ما زادت الكفاءة القصوى.</p>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ================= 9. EFF VS HELIX ================= -->
+<section class="section" id="s9">
+  <div class="section-header">
+    <div class="section-icon">📊</div>
+    <div><h2 class="section-title">Efficiency vs Helix Angle</h2><div class="section-sub">Art. 17.8 · Fig. 17.5</div></div>
+  </div>
+
+  <p>الـ efficiency بتعتمد على الـ <span class="en">helix angle</span> <span class="mono">α</span> والـ <span class="en">friction angle</span> <span class="mono">φ</span>. الرسم بيوضح تغيّرها مع α لثلاث قيم من μ:</p>
+
+  <figure class="fig fig-md"><img src="assets/lecture-1/fig-17-5-efficiency.png" alt="Graph of efficiency percent versus helix angle for mu 0.05, 0.10 and 0.15" loading="lazy"><figcaption>Fig. 17.5 — Graph between efficiency and helix angle (μ = 0.05, 0.10, 0.15)</figcaption></figure>
+
+  <ul style="padding-right:22px;margin-bottom:14px;">
+    <li>الـ efficiency <strong>بتزيد بسرعة</strong> لحد <span class="mono">α ≈ 20°</span>، وبعدها الزيادة بتبقى <strong>بطيئة</strong>.</li>
+    <li>الـ efficiency <strong>أقصى ما يمكن</strong> لما الـ helix angle بين <span class="mono">40°</span> و <span class="mono">45°</span>.</li>
+    <li>لما α تزيد أكتر (مثلًا <span class="mono">70°</span>) الـ efficiency <strong>بتنزل</strong>.</li>
+  </ul>
+
+  <div class="def-box">
+    <div class="box-title">💡 Design Insight — ليه بتنزل؟</div>
+    <p>لأن الـ <span class="en">normal thread force</span> بتبقى كبيرة، فالـ <span class="en">friction force</span> والـ <span class="en">work of friction</span> بيبقوا كبار مقارنة بالـ <span class="en">useful work</span>، فالنتيجة <strong>low efficiency</strong>.</p>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ================= 10. SELF LOCKING ================= -->
+<section class="section" id="s10">
+  <div class="section-header">
+    <div class="section-icon">🔒</div>
+    <div><h2 class="section-title">Overhauling &amp; Self-Locking Screws</h2><div class="section-sub">Art. 17.9 – 17.10</div></div>
+  </div>
+
+  <p>عرفنا إن الـ effort والـ torque المطلوبين لتنزيل الحمل:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[ P = W\tan(\phi-\alpha) \qquad T = P\cdot\frac{d}{2} = W\tan(\phi-\alpha)\cdot\frac{d}{2} \]
+  </div></div>
+
+  <div class="table-scroll"><table class="dt">
+    <tr><th>Condition</th><th>Lowering torque</th><th>Result</th></tr>
+    <tr><td class="lbl">\(\phi < \alpha\)</td><td class="lbl"><strong>سالب</strong> <span class="en">(negative)</span></td><td class="lbl">الحمل بينزل <strong>لوحده</strong> من غير أي torque → <span class="en"><strong>Over hauling</strong></span></td></tr>
+    <tr><td class="lbl">\(\phi > \alpha\)</td><td class="lbl"><strong>موجب</strong> <span class="en">(positive)</span></td><td class="lbl">لازم نبذل effort عشان ننزّل الحمل → <span class="en"><strong>Self-locking</strong></span></td></tr>
+  </table></div>
+
+  <div class="def-box">
+    <div class="box-title">📘 Definition — Self-locking screw</div>
+    <p>الـ screw بيكون <strong>self-locking</strong> لو الـ <span class="en">friction angle</span> أكبر من الـ <span class="en">helix angle</span>، أو الـ <span class="en">coefficient of friction</span> أكبر من <span class="mono">tan α</span>:</p>
+    <div class="eq-scroll">\[ \mu\ \text{or}\ \tan\phi > \tan\alpha \]</div>
+  </div>
+
+  <div class="def-box">
+    <div class="box-title">💡 Physical meaning</div>
+    <p>الـ self-locking معناه إن الكوريك يفضل شايل العربية <strong>حتى لو سيبت الـ lever</strong>. الاحتكاك أقوى من ميل الـ thread اللي عايز ينزّل الحمل. وده بالظبط سبب أمان الـ screw jack.</p>
+  </div>
+
+  <h3 class="sub">Efficiency of self-locking screws</h3>
+  <p>نعرف إن الـ efficiency (كما هو مطبوع في السلايد والمرجع):</p>
+  <div class="formula-box"><div class="eq-scroll">\[ \eta = \frac{\tan\phi}{\tan(\alpha+\phi)} \]</div></div>
+  <p>وللـ self-locking screws: <span class="mono">φ ≥ α</span> أو <span class="mono">α ≤ φ</span>. ∴ الـ efficiency:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \eta \le \frac{\tan\phi}{\tan(\phi+\phi)} \le \frac{\tan\phi}{\tan 2\phi}
+  \le \frac{\tan\phi\,(1-\tan^2\phi)}{2\tan\phi} \le \frac{1}{2} - \frac{\tan^2\phi}{2}
+  \qquad \left(\because\ \tan 2\phi = \frac{2\tan\phi}{1-\tan^2\phi}\right)
+  \]
+  </div></div>
+
+  <div class="warn-box">
+    <div class="box-title">⚠️ ملاحظة على الصيغة المطبوعة (Source Flag)</div>
+    <p>السطر الأول في الاشتقاق مطبوع بـ <span class="mono">tan φ</span> في البسط، بينما الـ efficiency من قسم 7 هي <span class="mono">tan α / tan(α+φ)</span>. حافظنا على الصيغة كما هي في المصدر (السلايد والمرجع). <strong>النتيجة النهائية صحيحة</strong> بأي حال: أقصى كفاءة لـ self-locking screw بتحصل عند <span class="mono">α = φ</span>، وعندها <span class="mono">η = tan φ / tan 2φ</span> وهي نفس الحد الأعلى. الأفضل تسأل المحاضر لو محتاج تتأكد من الصيغة المطلوبة في الامتحان.</p>
+  </div>
+
+  <div class="formula-box"><div class="box-title">Conclusion</div><div class="eq-scroll">\[ \boxed{\,\eta_{\text{self-locking}} < \tfrac{1}{2}\ (50\%)\,} \]</div></div>
+  <p>يعني كفاءة الـ self-locking screws <strong>أقل من 50%</strong>. ولو الكفاءة <strong>أكتر من 50%</strong> يبقى الـ screw <span class="en"><strong>overhauling</strong></span>.</p>
+
+  <h3 class="sub">Alternative proof (work argument)</h3>
+  <p>ليكن <span class="mono">W</span> الحمل و <span class="mono">h</span> المسافة اللي اترفع فيها:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  \begin{aligned}
+  \text{Output} &= W\cdot h \qquad \text{Input} = \frac{\text{Output}}{\eta} = \frac{W\cdot h}{\eta} \\[10pt]
+  \text{Work lost in friction} &= \text{Input} - \text{Output} = W\cdot h\left(\frac{1}{\eta} - 1\right)
+  \end{aligned}
+  \]
+  </div></div>
+  <p>لكي يكون الـ screw self-locking، شغل الاحتكاك ما يتعدّاش شغل الـ output:</p>
+  <div class="formula-box"><div class="eq-scroll">
+  \[
+  W\cdot h\left(\frac{1}{\eta}-1\right) \le W\cdot h
+  \ \Rightarrow\ \frac{1}{\eta} - 1 \le 1
+  \ \Rightarrow\ \eta \le \frac{1}{2}\ \text{ or }\ 50\%
+  \]
+  </div></div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ================= 11. EXAMPLES ================= -->
+<section class="section" id="s11">
+  <div class="section-header">
+    <div class="section-icon">🧮</div>
+    <div><h2 class="section-title">Solved Examples</h2><div class="section-sub">Examples 1 · 3 · 4</div></div>
+  </div>
+
+  <div class="note-box">
+    <div class="box-title">📝 Rounding note</div>
+    <p>الأرقام في الحلول محفوظة <strong>زي ما هي في السلايد</strong>. المحاضر بيقرّب <span class="mono">tan α</span> في كل مثال (0.08 / 0.0637 / 0.127)، ولو حسبتها بدقة كاملة على الآلة الحاسبة ممكن تلاقي فرق بسيط في آخر خانة — وده طبيعي ومتوقع.</p>
+  </div>
+
+  <!-- ===== EXAMPLE 1 ===== -->
+  <div class="example-card">
+    <div class="example-head">Example 1 — Hand-wheel diameter</div>
+    <div class="example-body">
+      <div class="q-box">A vertical screw with single start square threads of <strong>50 mm</strong> mean diameter and <strong>12.5 mm</strong> pitch is raised against a load of <strong>10 kN</strong> by means of a hand wheel, the boss of which is threaded to act as a nut. The axial load is taken up by a thrust collar which supports the wheel boss and has a mean diameter of <strong>60 mm</strong>. The coefficient of friction is <strong>0.15</strong> for the screw and <strong>0.18</strong> for the collar. If the tangential force applied by each hand to the wheel is <strong>100 N</strong>, find suitable diameter of the hand wheel.</div>
+
+      <div class="given-box"><div class="lbl">Given</div>
+      \(d = 50\ \text{mm};\ p = 12.5\ \text{mm};\ W = 10\ \text{kN} = 10\times10^3\ \text{N};\ D = 60\ \text{mm}\ \text{or}\ R = 30\ \text{mm};\ \mu = \tan\phi = 0.15;\ \mu_1 = 0.18;\ P_1 = 100\ \text{N}\)</div>
+
+      <div class="step"><div class="step-num">1</div><div class="step-body">
+        <div class="step-title">Helix angle</div>
+        <div class="eq-scroll">\[ \tan\alpha = \frac{p}{\pi d} = \frac{12.5}{\pi\times 50} = 0.08 \]</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">2</div><div class="step-body">
+        <div class="step-title">Tangential force at the circumference of the screw</div>
+        <div class="eq-scroll">\[ P = W\tan(\alpha+\phi) = W\left(\frac{\tan\alpha+\tan\phi}{1-\tan\alpha\tan\phi}\right) = 10\times10^3\left[\frac{0.08+0.15}{1-0.08\times0.15}\right] = 2328\ \text{N} \]</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">3</div><div class="step-body">
+        <div class="step-title">Total torque to turn the hand wheel</div>
+        <div class="eq-scroll">\[ T = P\times\frac{d}{2} + \mu_1 W R = 2328\times\frac{50}{2} + 0.18\times10\times10^3\times30 = 58\,200 + 54\,000 = 112\,200\ \text{N·mm} \tag{i} \]</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">4</div><div class="step-body">
+        <div class="step-title">Torque applied by both hands (D₁ = wheel diameter)</div>
+        <div class="eq-scroll">\[ T = 2P_1\times\frac{D_1}{2} = 2\times100\times\frac{D_1}{2} = 100\,D_1\ \text{N·mm} \tag{ii} \]</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">5</div><div class="step-body">
+        <div class="step-title">Equate (i) and (ii)</div>
+        <div class="eq-scroll">\[ D_1 = \frac{112\,200}{100} = 1122\ \text{mm} = 1.122\ \text{m} \]</div>
+        <div class="ans-badge">Ans: D₁ = 1.122 m</div>
+      </div></div>
+
+      <div class="interp"><strong>Engineering interpretation:</strong> الـ torque الكلي بيتقسم تقريبًا نص بنص: <span class="mono">58 200</span> للـ screw friction/lifting و <span class="mono">54 000</span> للـ collar friction. يعني احتكاك الـ collar مش هامشي — كبير جدًا هنا. والقطر الكبير (1.1 m) هو تعويض عن إن القوة اللي بتطبقها كل إيد صغيرة (100 N).</div>
+    </div>
+  </div>
+
+  <!-- ===== EXAMPLE 3 ===== -->
+  <div class="example-card">
+    <div class="example-head">Example 3 — Broaching machine: power &amp; efficiency</div>
+    <div class="example-body">
+      <div class="q-box">The cutter of a broaching machine is pulled by square threaded screw of <strong>55 mm</strong> external diameter and <strong>10 mm</strong> pitch. The operating nut takes the axial load of <strong>400 N</strong> on a flat surface of <strong>60 mm</strong> and <strong>90 mm</strong> internal and external diameters respectively. If the coefficient of friction is <strong>0.15</strong> for all contact surfaces on the nut, determine the power required to rotate the operating nut when the cutting speed is <strong>6 m/min</strong>. Also find the efficiency of the screw.</div>
+
+      <div class="given-box"><div class="lbl">Given</div>
+      \(d_o = 55\ \text{mm};\ p = 10\ \text{mm} = 0.01\ \text{m};\ W = 400\ \text{N};\ D_2 = 60\ \text{mm}\ (R_2 = 30\ \text{mm});\ D_1 = 90\ \text{mm}\ (R_1 = 45\ \text{mm});\ \mu = \tan\phi = \mu_1 = 0.15;\ \text{cutting speed} = 6\ \text{m/min}\)</div>
+
+      <div class="step"><div class="step-num">1</div><div class="step-body">
+        <div class="step-title">Mean diameter &amp; helix angle</div>
+        <div class="eq-scroll">\[ d = d_o - \frac{p}{2} = 55 - \frac{10}{2} = 50\ \text{mm} \qquad \tan\alpha = \frac{p}{\pi d} = \frac{10}{\pi\times50} = 0.0637 \]</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">2</div><div class="step-body">
+        <div class="step-title">Force at the circumference of the screw</div>
+        <div class="eq-scroll">\[ P = W\tan(\alpha+\phi) = W\left[\frac{\tan\alpha+\tan\phi}{1-\tan\alpha\cdot\tan\phi}\right] = 400\left[\frac{0.0637+0.15}{1-0.0637\times0.15}\right] = 86.4\ \text{N} \]</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">3</div><div class="step-body">
+        <div class="step-title">Mean radius of the flat surface</div>
+        <div class="eq-scroll">\[ R = \frac{R_1+R_2}{2} = \frac{45+30}{2} = 37.5\ \text{mm} \]</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">4</div><div class="step-body">
+        <div class="step-title">Total torque</div>
+        <div class="eq-scroll">\[ T = P\times\frac{d}{2} + \mu_1 W R = 86.4\times\frac{50}{2} + 0.15\times400\times37.5 = 4410\ \text{N·mm} \]</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">5</div><div class="step-body">
+        <div class="step-title">Speed of the screw &amp; angular speed</div>
+        <div class="eq-scroll">\[ N = \frac{\text{Cutting speed}}{\text{pitch}} = \frac{6}{0.01} = 600\ \text{r.p.m} \qquad \omega = \frac{2\pi N}{60} = \frac{2\pi\times600}{60} = 62.84\ \text{rad/s} \]</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">6</div><div class="step-body">
+        <div class="step-title">Power required to operate the nut</div>
+        <div class="eq-scroll">\[ \text{Power} = T\cdot\omega = 4.41\times62.84 = 277\ \text{W} = 0.277\ \text{kW} \]</div>
+        <div class="ans-badge">Ans: Power = 0.277 kW</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">7</div><div class="step-body">
+        <div class="step-title">Efficiency of the screw</div>
+        <div class="eq-scroll">\[ \eta = \frac{T_0}{T} = \frac{W\tan\alpha\times d/2}{T} = \frac{400\times0.0637\times50/2}{4410} = 0.144 \]</div>
+        <div class="ans-badge">Ans: η = 14.4 %</div>
+      </div></div>
+
+      <div class="warn-box"><div class="box-title">⚠️ Units — انتبه</div><p>الـ <span class="mono">T = 4410 N·mm = 4.41 N·m</span>. عشان الـ power تطلع بالـ Watt لازم الـ torque يكون بالـ <strong>N·m</strong> (عشان كده استخدمنا 4.41 مش 4410 في الخطوة 6).</p></div>
+
+      <div class="interp"><strong>Engineering interpretation:</strong> الكفاءة 14.4% منخفضة جدًا لأن الـ helix angle صغير (<span class="mono">α ≈ 3.6°</span>) ومعاه μ عالي (0.15) على كل الأسطح. ده screw مصمم للتحكم في الحركة مش للكفاءة — وده متوقع في الـ power screws.</div>
+    </div>
+  </div>
+
+  <!-- ===== EXAMPLE 4 ===== -->
+  <div class="example-card">
+    <div class="example-head">Example 4 — Two-start screw: raising &amp; lowering</div>
+    <div class="example-body">
+      <div class="q-box">A vertical two start square threaded screw of a <strong>100 mm</strong> mean diameter and <strong>20 mm</strong> pitch supports a vertical load of <strong>18 kN</strong>. The axial thrust on the screw is taken by a collar bearing of <strong>250 mm</strong> outside diameter and <strong>100 mm</strong> inside diameter. Find the force required at the end of a lever which is <strong>400 mm</strong> long in order to lift and lower the load. The coefficient of friction for the vertical screw and nut is <strong>0.15</strong> and that for collar bearing is <strong>0.20</strong>.</div>
+
+      <div class="given-box"><div class="lbl">Given</div>
+      \(d = 100\ \text{mm};\ p = 20\ \text{mm};\ W = 18\ \text{kN} = 18\times10^3\ \text{N};\ D_1 = 250\ \text{mm}\ (R_1 = 125\ \text{mm});\ D_2 = 100\ \text{mm}\ (R_2 = 50\ \text{mm});\ l = 400\ \text{mm};\ \mu = \tan\phi = 0.15;\ \mu_1 = 0.20\)</div>
+
+      <div class="step"><div class="step-num">1</div><div class="step-body">
+        <div class="step-title">Lead &amp; helix angle (two-start!)</div>
+        <div class="eq-scroll">\[ \text{Lead} = 2p = 2\times20 = 40\ \text{mm} \qquad \tan\alpha = \frac{\text{Lead}}{\pi d} = \frac{40}{\pi\times100} = 0.127 \]</div>
+      </div></div>
+
+      <div class="warn-box"><div class="box-title">⚠️ Common mistake</div><p>في الـ <strong>multi-start screw</strong> الـ <span class="mono">tan α = Lead / πd</span> مش <span class="mono">p / πd</span>. الـ <span class="en">Lead</span> = عدد الـ starts × الـ pitch.</p></div>
+
+      <h3 class="sub">1 · For raising the load</h3>
+
+      <div class="step"><div class="step-num">2</div><div class="step-body">
+        <div class="step-title">Tangential force at the circumference</div>
+        <div class="eq-scroll">\[ P = W\tan(\alpha+\phi) = W\left[\frac{\tan\alpha+\tan\phi}{1-\tan\alpha\tan\phi}\right] = 18\times10^3\left[\frac{0.127+0.15}{1-0.127\times0.15}\right] = 5083\ \text{N} \]</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">3</div><div class="step-body">
+        <div class="step-title">Mean radius of the collar</div>
+        <div class="eq-scroll">\[ R = \frac{R_1+R_2}{2} = \frac{125+50}{2} = 87.5\ \text{mm} \]</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">4</div><div class="step-body">
+        <div class="step-title">Total torque, then force at lever end</div>
+        <div class="eq-scroll">\[ T = P\times\frac{d}{2} + \mu_1 W R = 5083\times\frac{100}{2} + 0.20\times18\times10^3\times87.5 = 569\,150\ \text{N·mm} \]</div>
+        <div class="eq-scroll">\[ 569\,150 = P_1\times l = P_1\times400 \ \Rightarrow\ P_1 = \frac{569\,150}{400} = 1423\ \text{N} \]</div>
+        <div class="ans-badge">Ans (raising): P₁ = 1423 N</div>
+      </div></div>
+
+      <h3 class="sub">2 · For lowering the load</h3>
+
+      <div class="step"><div class="step-num">5</div><div class="step-body">
+        <div class="step-title">Tangential force at the circumference</div>
+        <div class="eq-scroll">\[ P = W\tan(\phi-\alpha) = W\left[\frac{\tan\phi-\tan\alpha}{1+\tan\phi\tan\alpha}\right] = 18\times10^3\left[\frac{0.15-0.127}{1+0.15\times0.127}\right] = 406.3\ \text{N} \]</div>
+      </div></div>
+
+      <div class="step"><div class="step-num">6</div><div class="step-body">
+        <div class="step-title">Total torque, then force at lever end</div>
+        <div class="eq-scroll">\[ T = P\times\frac{d}{2} + \mu_1 W R = 406.3\times\frac{100}{2} + 0.20\times18\times10^3\times87.5 = 335\,315\ \text{N·mm} \]</div>
+        <div class="eq-scroll">\[ 335\,315 = P_1\times l = P_1\times400 \ \Rightarrow\ P_1 = \frac{335\,315}{400} = 838.3\ \text{N} \]</div>
+        <div class="ans-badge">Ans (lowering): P₁ = 838.3 N</div>
+      </div></div>
+
+      <div class="interp"><strong>Engineering interpretation:</strong> لاحظ إن الـ <span class="mono">P₁</span> للـ lowering (838 N) لسه <strong>موجب</strong> — يعني لازم نبذل جهد عشان ننزّل الحمل. ده دليل إن الـ screw <strong>self-locking</strong> هنا (φ = 8.53° &gt; α = 7.25°). وكمان معظم الـ torque في الـ lowering جاي من احتكاك الـ collar (<span class="mono">315 000</span> من <span class="mono">335 315</span>)، مش من الـ screw نفسه.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ================= 12. PRACTICE ================= -->
+<section class="section" id="s12">
+  <div class="section-header">
+    <div class="section-icon">✍️</div>
+    <div><h2 class="section-title">Practice Questions</h2><div class="section-sub">Self-check · concept review</div></div>
+  </div>
+
+  <div class="note-box"><div class="box-title">📝 Note</div><p>الأسئلة دي بتراجع <strong>مفاهيم</strong> اتشرحت في المحاضرة، والحلول مستنتجة مباشرة من المعادلات والأمثلة اللي فوق (مش من مصدر خارجي).</p></div>
+
+  <div class="q-section">
+    <div class="q-item">
+      <div class="q-text">Q1. Why is the efficiency of a square threaded screw independent of the load W?</div>
+      <button class="sol-btn" type="button" data-sol="sol1" aria-expanded="false">عرض الحل الكامل ▼</button>
+      <div class="sol-content" id="sol1">
+        <p>لأن الـ <span class="mono">W</span> بيظهر في كل من الـ ideal effort والـ actual effort:</p>
+        <div class="eq-scroll">\[ \eta = \frac{P_0}{P} = \frac{W\tan\alpha}{W\tan(\alpha+\phi)} = \frac{\tan\alpha}{\tan(\alpha+\phi)} \]</div>
+        <p>الـ <span class="mono">W</span> بيتشال من البسط والمقام، فالنتيجة بتعتمد بس على <span class="mono">α</span> و <span class="mono">φ</span>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-text">Q2. When does a power screw overhaul, and when is it self-locking?</div>
+      <button class="sol-btn" type="button" data-sol="sol2" aria-expanded="false">عرض الحل الكامل ▼</button>
+      <div class="sol-content" id="sol2">
+        <p><strong>Overhauling:</strong> لما <span class="mono">φ &lt; α</span>، الـ lowering torque <span class="mono">W tan(φ−α)·d/2</span> بيبقى سالب، فالحمل بينزل لوحده. الكفاءة هنا <strong>أكبر من 50%</strong>.</p>
+        <p><strong>Self-locking:</strong> لما <span class="mono">φ &gt; α</span> (أو <span class="mono">μ &gt; tan α</span>)، الـ torque موجب فلازم effort لتنزيل الحمل. الكفاءة <strong>≤ 50%</strong>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-text">Q3. A screw has α = 5° and φ = 8.5°. Will it be self-locking? What does that imply for its efficiency?</div>
+      <button class="sol-btn" type="button" data-sol="sol3" aria-expanded="false">عرض الحل الكامل ▼</button>
+      <div class="sol-content" id="sol3">
+        <p>بما إن <span class="mono">φ = 8.5° &gt; α = 5°</span> فالـ screw <strong>self-locking</strong>. وبالتالي الكفاءة لازم تكون <strong>أقل من 50%</strong>.</p>
+        <p>تحقق سريع بالمعادلة:</p>
+        <div class="eq-scroll">\[ \eta = \frac{\tan 5^\circ}{\tan(5^\circ + 8.5^\circ)} = \frac{0.0875}{0.2401} \approx 0.364 = 36.4\% < 50\% \ \checkmark \]</div>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-text">Q4. For a two-start square screw with p = 20 mm and mean diameter d = 100 mm, what is tan α? Why is it not p/πd?</div>
+      <button class="sol-btn" type="button" data-sol="sol4" aria-expanded="false">عرض الحل الكامل ▼</button>
+      <div class="sol-content" id="sol4">
+        <p>في الـ two-start screw الـ <span class="en">Lead</span> = <span class="mono">2p = 40 mm</span> (بنتقدم 40 mm في اللفة الواحدة).</p>
+        <div class="eq-scroll">\[ \tan\alpha = \frac{\text{Lead}}{\pi d} = \frac{40}{\pi\times100} = 0.127 \]</div>
+        <p>لو استخدمنا <span class="mono">p/πd</span> هنقلّل الـ helix angle للنص تقريبًا وهتطلع كل الحسابات غلط.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-text">Q5. State the condition on the helix angle for maximum efficiency, and the resulting η<sub>max</sub> if μ = 0.10 (φ ≈ 5.71°).</div>
+      <button class="sol-btn" type="button" data-sol="sol5" aria-expanded="false">عرض الحل الكامل ▼</button>
+      <div class="sol-content" id="sol5">
+        <p>الـ efficiency أقصى ما يمكن لما <span class="mono">2α + φ = 90°</span> أي <span class="mono">α = 45° − φ/2</span>.</p>
+        <div class="eq-scroll">\[ \alpha = 45^\circ - \frac{5.71^\circ}{2} \approx 42.1^\circ \qquad \eta_{\max} = \frac{1-\sin\phi}{1+\sin\phi} = \frac{1-0.0995}{1+0.0995} \approx 0.819 = 81.9\% \]</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="foot">
+  <h4>Chapter 17 — Power Screws</h4>
+  <p>Mechanical Design II · Thread types, torque analysis, efficiency, and self-locking behaviour.</p>
+  <div class="tags">
+    <span class="tag">Square / Acme / Buttress</span>
+    <span class="tag">Torque to raise &amp; lower</span>
+    <span class="tag">Thrust collar</span>
+    <span class="tag">Friction coefficient</span>
+    <span class="tag">Efficiency</span>
+    <span class="tag">Self-locking</span>
+  </div>
+</footer>
+
+<div class="closing-wrap">
+  <div class="closing">🤲 ولا تنسوا الصلاة على النبي صلى الله عليه وسلم، والدعاء لإخوانكم في فلسطين وغزة وفي جميع بقاع الأرض، وأن ينصر الله المسلمين المستضعفين. 🤲</div>
+</div>
+
+<script>
+/* Dua toggle */
+(function(){
+  var btn=document.getElementById('duaBtn'), box=document.getElementById('duaContent');
+  btn.addEventListener('click',function(){
+    var open=btn.getAttribute('aria-expanded')==='true';
+    btn.setAttribute('aria-expanded',open?'false':'true');
+    box.style.display=open?'none':'block';
+  });
+})();
+
+/* Solution toggles */
+document.querySelectorAll('.sol-btn').forEach(function(b){
+  b.addEventListener('click',function(){
+    var el=document.getElementById(b.getAttribute('data-sol'));
+    var open=el.style.display==='block';
+    el.style.display=open?'none':'block';
+    b.setAttribute('aria-expanded',open?'false':'true');
+    b.textContent=open?'عرض الحل الكامل ▼':'إخفاء الحل ▲';
+    if(!open && window.MathJax && MathJax.typesetPromise){ MathJax.typesetPromise([el]); }
+  });
+});
+
+/* Smooth TOC scroll */
+document.querySelectorAll('.toc-item').forEach(function(a){
+  a.addEventListener('click',function(e){
+    var t=document.querySelector(a.getAttribute('href'));
+    if(t){ e.preventDefault(); t.scrollIntoView({behavior:'smooth',block:'start'}); }
+  });
+});
+</script>
+<script>
+/* Eye Protection toggle */
+(function(){
+  var KEY='eyeProtection', root=document.documentElement, btn=document.getElementById('eyeToggle');
+  if(!btn) return;
+  var st=btn.querySelector('.eye-st');
+  function render(on){ btn.setAttribute('aria-pressed', on?'true':'false'); st.textContent = on?'ON':'OFF'; }
+  render(root.getAttribute('data-eye')==='on');
+  btn.addEventListener('click', function(){
+    var on = root.getAttribute('data-eye') !== 'on';
+    if(on){ root.setAttribute('data-eye','on'); } else { root.removeAttribute('data-eye'); }
+    render(on);
+    try{ localStorage.setItem(KEY, on?'on':'off'); }catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
